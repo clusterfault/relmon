@@ -1,0 +1,8 @@
+{
+    "type": "github",
+    "repo": "immich-app/immich",
+    "fileglobs": [
+        "*.yml",
+	"example.env"
+    ]
+}
