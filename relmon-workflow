@@ -41,9 +41,10 @@ for target_dir in "${TARGET_CONFIGS_DIR}"/*; do
             if [ "$release" == "$prev_version" ]; then
 		        found="yes"
 	            break;
-	        fi
-	        unprocessed_releases="${release}"$'\n'"${unprocessed_releases}"
+	    fi
+	    unprocessed_releases="${release}"$'\n'"${unprocessed_releases}"
         done
+    fi
 done
 echo ""
 echo "Processed all targets"
