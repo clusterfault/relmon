@@ -7,6 +7,9 @@ set -o pipefail
 TARGET_CONFIGS_DIR="targets"
 CONFIG_FILE="config.json"
 
+function get_latest_release {
+    curl --silent https://api.github.com/repos/immich-app/immich/releases/latest | jq -r '.tag_name'
+}
 
 function fetch_release_files {
 
@@ -42,6 +45,18 @@ function fetch_release_files {
      done
 }
 
+function init {
+
+    echo ""
+    echo "Initializing commits with latest version"
+
+    echo ""
+    echo "Creating directory to track release files"
+    mkdir -p "$target_dir/files"
+
+    latest_release=$(get_latest_release) 
+    fetch_release_files "$latest_release"
+}
 
 echo ""
 echo "Iterating through targets to get release updates"
@@ -91,6 +106,10 @@ for target_dir in "${TARGET_CONFIGS_DIR}"/*; do
 	echo ""
 	echo "Last committed version for $target was $prev_version"
 	fetch_release_files "$unprocessed_release_files"
+    else
+	echo ""
+        echo "No previously comitted versions found"
+	init
     fi
 done
 echo ""
