@@ -1,0 +1,21 @@
+#!/usr/bin/env bash 
+
+set -o errexit
+set -o nounset
+set -o pipefail
+
+TARGET_CONFIGS_DIR="targets"
+CONFIG_FILE="config.json"
+
+echo ""
+echo "Iterating through targets to get release updates"
+# Loop through the targets inside the repo
+for target_dir in "${TARGET_CONFIGS_DIR}"/*; do
+
+    target="$(basename $target_dir)"
+    echo ""
+    echo "Target $target"
+done
+echo ""
+echo "Processed all targets"
+
