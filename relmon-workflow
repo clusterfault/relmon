@@ -7,6 +7,42 @@ set -o pipefail
 TARGET_CONFIGS_DIR="targets"
 CONFIG_FILE="config.json"
 
+
+function fetch_release_files {
+
+    releases="$1" 	
+    # Fetch files matching the pattern for any uncommitted versions for the target 
+    for release in $releases; do
+
+	echo""
+	echo "Fetching files for $target version $release"
+
+	release_assets_json="$( echo "$target_release_list_json" | jq -r --arg RELEASE "$release" '.[] | select(.tag_name|test($RELEASE)).assets' )"
+	# Loop through patterns for each releases
+	for file_patt in $( jq -r .file_patts[] ${target_dir}/${CONFIG_FILE} ); do
+	    echo "    with pattern \"$file_patt\""
+		
+	    # Get list of files 
+	    files="$( echo "$release_assets_json" | jq -r --arg FILE_PATT "$file_patt" '.[] | select(.name|test($FILE_PATT))| .browser_download_url')"
+
+	    # Download the files 
+	    for file in $files; do
+		wget -q -O $target_dir/files/"$(basename $file)" $file 
+		git add targets/$target/files/"$(basename $file)"
+	    done
+	done
+	echo "Done"
+
+	echo ""
+	echo "Comitting the fetched files to tracking repo"
+	echo "$release" > "$target_dir/files/version"
+	git add targets/$target/files/version
+	git commit -m "[$target] updated for version $release" 
+
+     done
+}
+
+
 echo ""
 echo "Iterating through targets to get release updates"
 # Loop through the targets inside the repo
@@ -44,6 +80,17 @@ for target_dir in "${TARGET_CONFIGS_DIR}"/*; do
 	    fi
 	    unprocessed_releases="${release}"$'\n'"${unprocessed_releases}"
         done
+
+	# if previous(committed) version not found in the list error out for manual intervention
+	if [ "$found" == "no" ];
+	then
+	   echo "Previously comitted version not found in the list of recent releases"
+	   exit 1
+	fi
+
+	echo ""
+	echo "Last committed version for $target was $prev_version"
+	fetch_release_files "$unprocessed_release_files"
     fi
 done
 echo ""
