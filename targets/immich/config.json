@@ -1,8 +1,8 @@
 {
     "type": "github",
     "repo": "immich-app/immich",
-    "fileglobs": [
-        "*.yml",
+    "file_patts": [
+        ".yml",
 	"example.env"
     ]
 }
