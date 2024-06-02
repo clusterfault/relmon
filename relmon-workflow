@@ -15,6 +15,35 @@ for target_dir in "${TARGET_CONFIGS_DIR}"/*; do
     target="$(basename $target_dir)"
     echo ""
     echo "Target $target"
+   
+    # Get target release repo from config
+    target_release_repo="$( jq -r .repo ${target_dir}/${CONFIG_FILE} )"
+
+    # Use Github API to get list for releaes for the repo
+    target_release_list_json="$( curl --silent https://api.github.com/repos/$target_release_repo/releases )"
+
+    # if there are existing versions committed
+    # find uncommitted versions and then work our way
+    # back to the lastest release
+    # If previous release not found in release list then error out
+    # CAUTION: Does not consider pagination
+    if [ -f "${target_dir}/files/version" ]; then
+
+        # Get previously committed release
+	    prev_version="$(cat ${target_dir}/files/version)"
+
+	    releases_list="$( echo $target_release_list_json | jq -r '.[].tag_name' )"
+
+	    # Based on previously committed release version compute list of uncommitted releases
+	    unprocessed_releases=""
+	    found="no"
+	    for release in $releases_list; do
+            if [ "$release" == "$prev_version" ]; then
+		        found="yes"
+	            break;
+	        fi
+	        unprocessed_releases="${release}"$'\n'"${unprocessed_releases}"
+        done
 done
 echo ""
 echo "Processed all targets"
