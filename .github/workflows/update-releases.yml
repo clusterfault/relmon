@@ -1,5 +1,5 @@
 name: Update releases 
-run-name: ${{ github.actor }} is testing out GitHub Actions 🚀
+run-name: Update releases
 on: [push]
 jobs:
   Update-Releases:
@@ -9,4 +9,8 @@ jobs:
     steps:
       - name: Check out repository code
         uses: actions/checkout@v4
+      - name: Set Git user config
+        run: |
+          git config --global user.name "${{ github.actor }}"
+          git config --global user.email  "${{ github.actor_id }}+${{ github.actor }}@users.noreply.github.com"
       - run: ./relmon-workflow
