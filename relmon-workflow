@@ -113,5 +113,8 @@ for target_dir in "${TARGET_CONFIGS_DIR}"/*; do
     fi
 done
 echo ""
+echo "Pushing updates to remote"
+git push
+echo ""
 echo "Processed all targets"
 
