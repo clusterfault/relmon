@@ -3,6 +3,7 @@
 set -o errexit
 set -o nounset
 set -o pipefail
+set -x
 
 TARGET_CONFIGS_DIR="targets"
 CONFIG_FILE="config.json"
