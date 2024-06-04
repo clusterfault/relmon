@@ -3,7 +3,6 @@
 set -o errexit
 set -o nounset
 set -o pipefail
-set -x
 
 TARGET_CONFIGS_DIR="targets"
 CONFIG_FILE="config.json"
@@ -79,6 +78,7 @@ for target_dir in "${TARGET_CONFIGS_DIR}"/*; do
     # back to the lastest release
     # If previous release not found in release list then error out
     # CAUTION: Does not consider pagination
+    set -x
     if [ -f "${target_dir}/files/version" ]; then
 
         # Get previously committed release
