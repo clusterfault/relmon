@@ -1,8 +1,8 @@
 name: Update releases 
 run-name: Update releases
-on:
-  schedule:
-    - cron: "0 0 * * *" 
+on: push
+  # schedule:
+  #  - cron: "0 0 * * *" 
 jobs:
   Update-Releases:
     permissions:
