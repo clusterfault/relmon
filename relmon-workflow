@@ -78,7 +78,6 @@ for target_dir in "${TARGET_CONFIGS_DIR}"/*; do
     # back to the lastest release
     # If previous release not found in release list then error out
     # CAUTION: Does not consider pagination
-    set -x
     if [ -f "${target_dir}/files/version" ]; then
 
         # Get previously committed release
@@ -106,6 +105,7 @@ for target_dir in "${TARGET_CONFIGS_DIR}"/*; do
 
 	echo ""
 	echo "Last committed version for $target was $prev_version"
+        set -x
 	fetch_release_files "$unprocessed_release_files"
     else
 	echo ""
