@@ -106,7 +106,7 @@ for target_dir in "${TARGET_CONFIGS_DIR}"/*; do
 	echo ""
 	echo "Last committed version for $target was $prev_version"
         set -x
-	fetch_release_files "$unprocessed_release_files"
+	fetch_release_files "$unprocessed_releases"
     else
 	echo ""
         echo "No previously comitted versions found"
