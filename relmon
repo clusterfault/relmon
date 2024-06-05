@@ -4,12 +4,8 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-TARGETS_REPO="https://github.com/clusterfault/relmon"
 TARGET_CONFIGS_DIR="targets"
 CONFIG_FILE="config.json"
-
-REPO_DIR="$(mktemp --directory)"
-
 
 function get_latest_release {
     curl --silent https://api.github.com/repos/immich-app/immich/releases/latest | jq -r '.tag_name'
@@ -35,7 +31,7 @@ function fetch_release_files {
 	    # Download the files 
 	    for file in $files; do
 		wget -q -O $target_dir/files/"$(basename $file)" $file 
-		git -C $REPO_DIR add targets/$target/files/"$(basename $file)"
+		git add targets/$target/files/"$(basename $file)"
 	    done
 	done
 	echo "Done"
@@ -43,10 +39,10 @@ function fetch_release_files {
 	echo ""
 	echo "Comitting the fetched files to tracking repo"
 	echo "$release" > "$target_dir/files/version"
-	git -C $REPO_DIR add targets/$target/files/version
-	git -C $REPO_DIR commit -m "[$target] updated for version $release" 
+	git add targets/$target/files/version
+	git commit -m "[$target] updated for version $release" 
 
-     done
+    done
 }
 
 function init {
@@ -62,24 +58,15 @@ function init {
     fetch_release_files "$latest_release"
 }
 
-echo -n "Fetching tracking repo ... "
-git clone --quiet "$TARGETS_REPO" "$REPO_DIR"
-echo "Done"
-
-##temp
-#mkdir "${REPO_DIR}/${TARGET_CONFIGS_DIR}/immich/files"
-#echo "v1.103.1" > "${REPO_DIR}/${TARGET_CONFIGS_DIR}/immich/files/version"
-##temp
-
 echo ""
 echo "Iterating through targets to get release updates"
 # Loop through the targets inside the repo
-for target_dir in "${REPO_DIR}/${TARGET_CONFIGS_DIR}"/*; do
+for target_dir in "${TARGET_CONFIGS_DIR}"/*; do
 
     target="$(basename $target_dir)"
     echo ""
     echo "Target $target"
-
+   
     # Get target release repo from config
     target_release_repo="$( jq -r .repo ${target_dir}/${CONFIG_FILE} )"
 
@@ -94,17 +81,17 @@ for target_dir in "${REPO_DIR}/${TARGET_CONFIGS_DIR}"/*; do
     if [ -f "${target_dir}/files/version" ]; then
 
         # Get previously committed release
-	prev_version="$(cat ${target_dir}/files/version)"
+	    prev_version="$(cat ${target_dir}/files/version)"
 
-	releases_list="$( echo $target_release_list_json | jq -r '.[].tag_name' )"
+	    releases_list="$( echo $target_release_list_json | jq -r '.[].tag_name' )"
 
-	# Based on previously committed release version compute list of uncommitted releases
-	unprocessed_releases=""
-	found="no"
-	for release in $releases_list; do
+	    # Based on previously committed release version compute list of uncommitted releases
+	    unprocessed_releases=""
+	    found="no"
+	    for release in $releases_list; do
             if [ "$release" == "$prev_version" ]; then
-		found="yes"
-	        break;
+		        found="yes"
+	            break;
 	    fi
 	    unprocessed_releases="${release}"$'\n'"${unprocessed_releases}"
         done
@@ -118,14 +105,20 @@ for target_dir in "${REPO_DIR}/${TARGET_CONFIGS_DIR}"/*; do
 
 	echo ""
 	echo "Last committed version for $target was $prev_version"
-	fetch_release_files "$unprocessed_releases"
-
+        if [ -n "$unprocessed_releases" ]; then
+            fetch_release_files "$unprocessed_releases"
+        else
+            echo "Latest release already comitted"
+        fi
     else
 	echo ""
         echo "No previously comitted versions found"
 	init
     fi
 done
+echo ""
+echo "Pushing updates to remote"
+git push
 echo ""
 echo "Processed all targets"
 
